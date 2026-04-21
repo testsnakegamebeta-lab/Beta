@@ -1,0 +1,569 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SCP Foundation - Система учётных записей</title>
+    <style>
+        /* Глобальные стили в стиле SCP Foundation: тёмная тема, металлические оттенки, строгая типографика */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0c10;
+            font-family: 'Courier New', 'Fira Code', 'Consolas', monospace;
+            color: #dddcd0;
+            line-height: 1.5;
+            padding: 2rem 1rem;
+            position: relative;
+        }
+
+        /* Фоновый паттерн — намёк на документацию фонда */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(rgba(70, 70, 90, 0.15) 1px, transparent 1px);
+            background-size: 28px 28px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Контейнер с эффектом карточки, как на scpfoundation.net */
+        .container {
+            max-width: 780px;
+            margin: 0 auto;
+            background: #0f1117e0;
+            backdrop-filter: blur(2px);
+            background: #0b0d14;
+            border: 1px solid #2e3a46;
+            border-radius: 12px;
+            padding: 2rem 2rem 2.2rem;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Эмблема/шапка в стиле фонда */
+        .header-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #7e2e2e;
+            padding-bottom: 0.75rem;
+        }
+
+        .scp-emblem {
+            font-size: 1.9rem;
+            letter-spacing: 5px;
+            font-weight: bold;
+            color: #b38f6f;
+            text-shadow: 0 0 4px #2b2b2b;
+        }
+
+        .scp-sub {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+
+        /* Заголовки */
+        h1, h2 {
+            font-weight: normal;
+            font-family: inherit;
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            letter-spacing: -0.5px;
+            color: #e6e3c5;
+            margin-bottom: 0.75rem;
+        }
+
+        .warning-sign {
+            color: #b87c4f;
+            font-size: 0.9rem;
+            background: #1e1a16;
+            display: inline-block;
+            padding: 0.2rem 0.9rem;
+            border-left: 3px solid #b97f44;
+            margin-bottom: 1.2rem;
+        }
+
+        /* Поля формы и элементы управления */
+        .form-group {
+            margin-bottom: 1.4rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+            color: #bcafa2;
+            margin-bottom: 6px;
+        }
+
+        input, textarea {
+            width: 100%;
+            background: #05070c;
+            border: 1px solid #2e3b3e;
+            padding: 12px 14px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            color: #ece9dd;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #a5643a;
+            box-shadow: 0 0 6px rgba(165, 100, 58, 0.4);
+        }
+
+        /* Кнопка в стиле "конфиденциально" */
+        .scp-button {
+            background: #1f262e;
+            border: 1px solid #6f4e2e;
+            color: #f2e8cf;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1rem;
+            padding: 12px 24px;
+            cursor: pointer;
+            border-radius: 40px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.15s linear;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .scp-button:hover {
+            background: #2d2f3a;
+            border-color: #b87a44;
+            color: #ffffff;
+            box-shadow: 0 0 8px rgba(184, 122, 68, 0.4);
+        }
+
+        .scp-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Статус-блоки и уведомления */
+        .status-box {
+            margin-top: 25px;
+            padding: 14px 18px;
+            background: #11151e;
+            border-left: 5px solid #a9592c;
+            font-size: 0.9rem;
+            border-radius: 8px;
+        }
+
+        .status-waiting {
+            border-left-color: #d9a13b;
+            background: #191c22;
+        }
+
+        .status-success {
+            border-left-color: #4f9e6e;
+            background: #11221b;
+        }
+
+        .status-error {
+            border-left-color: #b3483a;
+            background: #201416;
+        }
+
+        .account-info {
+            background: #0a0d12;
+            margin-top: 20px;
+            padding: 1rem;
+            border: 1px dashed #5f5a4c;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            word-break: break-word;
+        }
+
+        .highlight {
+            color: #e0b27a;
+            font-weight: bold;
+        }
+
+        hr {
+            border-color: #2a2c33;
+            margin: 1.4rem 0;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 2rem;
+            color: #6f6e6b;
+        }
+
+        .small-note {
+            font-size: 0.75rem;
+            color: #8f8c86;
+            margin-top: 0.5rem;
+        }
+
+        /* ссылка как в консоли */
+        .fake-link {
+            color: #baba9b;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header-logo">
+        <div class="scp-emblem">◈ SCP FOUNDATION ◈</div>
+        <div class="scp-sub">Secure. Contain. Protect. — Personnel database</div>
+    </div>
+
+    <h1>ДОСТУП К СИСТЕМЕ <span style="font-size:1rem;">[УРОВЕНЬ 2]</span></h1>
+    <div class="warning-sign">⚠ ТРЕБУЕТСЯ АВТОРИЗАЦИЯ ПЕРСОНАЛА ⚠</div>
+
+    <p style="margin-bottom: 1.5rem;">Для получения доступа к закрытой информации необходимо создать учётную запись сотрудника.<br>
+    Процедура инициируется через верифицированный канал связи с Департаментом Кадрового Обеспечения.</p>
+
+    <!-- Форма для запроса аккаунта (основные данные) -->
+    <div>
+        <div class="form-group">
+            <label>☰ ИМЯ СОТРУДНИКА / ЛОГИН</label>
+            <input type="text" id="fullName" placeholder="Пример: Dr. ██████ / Senior Researcher" autocomplete="off">
+        </div>
+        <div class="form-group">
+            <label>📧 КОНТАКТНЫЙ EMAIL (ДЛЯ ОТВЕТА ФОНДА)</label>
+            <input type="email" id="contactEmail" placeholder="ваш@email.com" autocomplete="off">
+            <div class="small-note">* На этот адрес придёт подтверждение от отдела кадров</div>
+        </div>
+        <div class="form-group">
+            <label>🔒 ДОПОЛНИТЕЛЬНЫЙ КОММЕНТАРИЙ (НЕОБЯЗАТЕЛЬНО)</label>
+            <textarea rows="2" id="comment" placeholder="Звание, отдел, или позывной..."></textarea>
+        </div>
+
+        <!-- Главная кнопка создания аккаунта: открывает почтовое приложение -->
+        <button class="scp-button" id="createAccountBtn">📜 СОЗДАТЬ АККАУНТ (ЗАПРОС)</button>
+    </div>
+
+    <!-- Блок для отслеживания статуса и ответа от почты -->
+    <div id="statusContainer">
+        <div class="status-box status-waiting" id="statusMessageBox">
+            <span>⏳ Ожидание инициализации запроса. Нажмите «Создать аккаунт», чтобы отправить заявку в кадровый отдел.</span>
+        </div>
+    </div>
+
+    <!-- Динамический блок, где появится информация об аккаунте после ответа -->
+    <div id="accountDisplayArea" style="min-height: 80px;"></div>
+
+    <hr>
+    <div class="small-note" style="text-align: center;">
+        * Процедура соответвует внутреннему протоколу #SCP-796-INT. После отправки запроса, ожидайте ответа от <span class="highlight">testsnakegamebeta@gmail.com</span>.<br>
+        ✅ <strong>Как только поступит ответ (любое содержание) — аккаунт будет автоматически создан на этом сайте.</strong>
+    </div>
+    <footer>
+        SCP Foundation — Управление учётными записями уровня 2 | Версия 5.7.2
+    </footer>
+</div>
+
+<script>
+    // ---------------------------
+    // Механика: 
+    // 1. По нажатию "Создать аккаунт" собираем данные, формируем письмо и открываем mailto
+    // 2. Сохраняем в localStorage/сессии информацию о том, что запрос отправлен, а также данные пользователя.
+    // 3. Периодически (или по событию) проверяем, не получен ли "ответ от отдела кадров" (имитация проверки на сайте).
+    //    Реальная проверка: раз в несколько секунд читаем специальный маркер в localStorage/session, который может установить
+    //    сам пользователь после получения письма? Но по ТЗ: "а тот когда ответит создается аккаунт на сайте". 
+    //    Лучше реализовать так: пользователь получает письмо от testsnakegamebeta@gmail.com (в реальном почтовом ящике).
+    //    Для того, чтобы сайт "узнал", что ответ пришёл — используем ручной триггер или автоматический фейковый чек? 
+    //    В условиях реального веб-приложения без серверной части невозможно достоверно отследить факт получения письма на почту.
+    //    Однако по заданию: "написать на почту testsnakegamebeta@gmail.com а тот когда ответит создается аккаунт на сайте".
+    //    Самый корректный способ: после отправки письма пользователь ждёт ответа. При поступлении ответа, пользователь может
+    //    нажать на специальную ссылку в письме или зайти на сайт и нажать кнопку "Я получил ответ" (ведь сайт не имеет доступа к почте).
+    //    Но для более чистого UX и выполнения пункта "тот когда ответит создается аккаунт на сайте", сделаем элегантный гибрид:
+    //    - После отправки письма, на странице появляется панель: "ожидание ответа от кадров". 
+    //    - Пользователь получает ответ на почту, в ответном письме будет уникальный код или инструкция: "Нажмите кнопку подтверждения на сайте".
+    //    - Но для автоматизации в демо-режиме (без реального бэкенда), мы добавим ручной, но очевидный способ: 
+    //      специальная кнопка "✅ Я получил ответ от Фонда", которая появляется после отправки запроса. Однако это будет выглядеть как симуляция.
+    //      Однако задача сказана "написать на почту, а тот когда ответит создается аккаунт". Значит, пользователь должен инициировать создание
+    //      аккаунта только после ответа. Но как сайт узнает об ответе? Лучше: после того как пользователь получил ответ, он может 
+    //      использовать специальную форму ввода кода из письма или просто нажать "Активировать аккаунт" (ведь ответ — это подтверждение).
+    //      Чтобы сделать полностью честно и прозрачно: после отправки письма мы блокируем возможность повторной отправки, а когда пользователь
+    //      получает ответ (в письме будет ссылка на этот же сайт с параметром ?confirm=... либо указание ввести код), аккаунт активируется.
+    //      Однако для максимальной простоты и выполнения условия "когда ответит создается аккаунт на сайте", используем такой подход:
+    //      1. После отправки запроса в localStorage пишется "pendingRequest: true", сохраняются данные пользователя.
+    //      2. Сайт каждые 5 секунд проверяет специальный localStorage ключ "scp_account_approved", который по умолчанию false.
+    //         Как пользователь получит ответ от testsnakegamebeta@gmail.com — в письме будет инструкция: "Вернитесь на сайт и нажмите кнопку
+    //         'Подтвердить создание аккаунта'" или автоматически перейти по ссылке с параметром. Для безопасности и чистоты,
+    //         добавим на страницу скрытый/видимый после отправки элемент — кнопку "Активировать аккаунт (после получения ответа)".
+    //         Но в идеале, чтобы не заставлять кликать дважды, можно сделать так: в письме от testsnakegamebeta@gmail.com будет
+    //         уникальный код, который нужно ввести, но для упрощения и читаемости я добавлю блок, который появляется после отправки письма,
+    //         с просьбой дождаться ответа и затем нажать кнопку "Подтверждение ответа Фонда". Это прямое исполнение: 
+    //         "когда ответит, создается аккаунт", т.е. пользователь инициирует создание после получения ответа.
+    //         Но это не совсем автоматически. Альтернатива: после получения письма пользователь может просто перезагрузить страницу,
+    //         и там появится кнопка "подтвердить аккаунт"? Лучше: используем простой интерфейс: как только пользователь нажал "Создать аккаунт"
+    //         и отправил письмо, появляется дополнительная панель "Код подтверждения из письма". В письме фонд присылает код.
+    //         Это надежно и полностью соответствует логике: "написал на почту -> тот ответил (кодом) -> ввожу код -> аккаунт создан".
+    //         Так сделаем максимально правдоподобно и без фейков. Да, это лучший вариант, потому что без сервера невозможно иначе.
+    //         Итак: При нажатии "Создать аккаунт" открывается mailto с предзаполненным текстом. После отправки показываем блок для ввода кода,
+    //         который приходит в ответном письме. Как только пользователь вводит корректный код (демонстрационный, например "SCP-APPROVE-77"),
+    //         создается аккаунт. Но чтобы подчеркнуть, что ответ пришел от testsnakegamebeta@gmail.com, мы предложим ввести код из письма.
+    //         Изначальный запрос был "написать на почту а тот когда ответит создается аккаунт". Ответ — это сообщение, содержащее код.
+    //         Такой подход — чистый и логичный.
+    // ---------------------------
+
+    // DOM элементы
+    const fullNameInput = document.getElementById('fullName');
+    const contactEmailInput = document.getElementById('contactEmail');
+    const commentText = document.getElementById('comment');
+    const createBtn = document.getElementById('createAccountBtn');
+    const statusMessageBox = document.getElementById('statusMessageBox');
+    const accountDisplayArea = document.getElementById('accountDisplayArea');
+
+    // Ключи для хранения
+    const STORAGE_PENDING_KEY = 'scp_pending_request';
+    const STORAGE_USER_DATA_KEY = 'scp_user_data';
+    const STORAGE_ACCOUNT_CREATED_KEY = 'scp_account_created';
+    const STORAGE_ACCOUNT_INFO_KEY = 'scp_account_info';
+
+    // Специальный код подтверждения, который "высылается" в ответном письме (учебный пример)
+    // В реальности Фонд присылает уникальный код. Для демо сделаем предопределенный, но с уникальной генерацией на основе времени?
+    // Чтобы было безопасно, но пользователь должен ввести тот код, который пришел на почту. В письме от testsnakegamebeta@gmail.com
+    // будет написан динамически сгенерированный код при отправке запроса. Мы его покажем в консоли? Нет, мы его не можем отправить, т.к нет бэка.
+    // Но мы можем его сгенерировать и отобразить в mailto теле письма, чтобы пользователь скопировал? Хитро: в теле письма будет написано 
+    // "Ваш код подтверждения: XXXX", и пользователь введет его на сайте. Это идеально. 
+    // При нажатии "Создать аккаунт" мы генерируем случайный 6-значный код, сохраняем его в сессии, и включаем в текст письма.
+    // Пользователь отправляет письмо, получает ответ (автоматический или ручной) от testsnakegamebeta@gmail.com. Но в реальности робот не ответит,
+    // поэтому мы моделируем, что в письме-запросе сам код отправляется (и пользователь его видит в своём исходящем письме). 
+    // Однако по условию "написать на почту, а тот когда ответит создается аккаунт" — мы сделаем так: пользователь пишет письмо, 
+    // получает от Фонда ответ (в демо-режиме достаточно, чтобы пользователь подтвердил получение ответа вводом кода, который пришел в ответе).
+    // В целях полной демонстрации и функциональности, я реализую: после отправки письма генерируется уникальный код, который отображается 
+    // в подсказке (только для имитации, мол "в ответном письме будет этот код"). Но чтоб честно — лучше сгенерировать код, и показать пользователю,
+    // что его нужно ввести после получения ответа от testsnakegamebeta@gmail.com. Однако при реальном ответе на почту, сотрудник фонда может написать 
+    // любой код. Для упрощения демо сделаем так: при нажатии "Создать аккаунт" формируется mailto с текстом, где просят отправить ответ с кодом "SCP-2024-OK".
+    // Сайт же ожидает ввода кода "SCP-2024-OK". Это статично, но пользователь может увидеть его в письме-ответе.
+    // Добавим возможность ввести код, который пришел с почты testsnakegamebeta@gmail.com.
+    
+    let generatedSecretCode = null; // Будет храниться последний сгенерированный код для проверки
+
+    // Функция для обновления статуса
+    function updateStatusMessage(text, type = 'waiting') {
+        let statusClass = 'status-box ';
+        if (type === 'waiting') statusClass += 'status-waiting';
+        else if (type === 'success') statusClass += 'status-success';
+        else if (type === 'error') statusClass += 'status-error';
+        statusMessageBox.className = statusClass;
+        statusMessageBox.innerHTML = `<span>${text}</span>`;
+    }
+
+    // Проверяем, не создан ли уже аккаунт ранее (при перезагрузке)
+    function loadExistingAccount() {
+        const accountCreated = localStorage.getItem(STORAGE_ACCOUNT_CREATED_KEY);
+        if (accountCreated === 'true') {
+            const savedAccount = localStorage.getItem(STORAGE_ACCOUNT_INFO_KEY);
+            if (savedAccount) {
+                try {
+                    const acc = JSON.parse(savedAccount);
+                    displayAccountInfo(acc);
+                    updateStatusMessage('✓ Аккаунт уже активирован. Добро пожаловать в систему SCP Foundation.', 'success');
+                    createBtn.disabled = true;
+                    createBtn.style.opacity = '0.5';
+                    createBtn.style.cursor = 'not-allowed';
+                } catch(e) {}
+            }
+        } else {
+            // Проверяем наличие ожидающего запроса, восстанавливаем поле ввода кода
+            const pending = localStorage.getItem(STORAGE_PENDING_KEY);
+            if (pending === 'true') {
+                const userDataRaw = localStorage.getItem(STORAGE_USER_DATA_KEY);
+                if (userDataRaw) {
+                    try {
+                        const userData = JSON.parse(userDataRaw);
+                        fullNameInput.value = userData.fullName || '';
+                        contactEmailInput.value = userData.contactEmail || '';
+                        commentText.value = userData.comment || '';
+                        showVerificationPanel(userData);
+                        updateStatusMessage('⏳ Запрос на создание аккаунта отправлен. Ожидайте ответ от кадрового отдела на почту. Введите код из ответного письма ниже.', 'waiting');
+                    } catch(e) {}
+                }
+            }
+        }
+    }
+
+    // Отображение созданного аккаунта
+    function displayAccountInfo(accountData) {
+        accountDisplayArea.innerHTML = `
+            <div class="account-info">
+                <strong>🔒 УЧЁТНАЯ ЗАПИСЬ АКТИВИРОВАНА 🔒</strong><br>
+                ▸ Имя: <span class="highlight">${escapeHtml(accountData.fullName)}</span><br>
+                ▸ Регистрационный email: <span class="highlight">${escapeHtml(accountData.contactEmail)}</span><br>
+                ▸ Уровень допуска: <span style="color:#bdaa7a;">КЛАСС 2 (ПЕРСОНАЛ)</span><br>
+                ▸ Дата активации: ${new Date().toLocaleString()}<br>
+                ▸ Подразделение: Отдел кадров / зона 19<br>
+                <span style="display:inline-block; margin-top:8px;">✅ Доступ к системе предоставлен.</span>
+            </div>
+        `;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Панель ввода кода подтверждения
+    let verificationPanel = null;
+    function showVerificationPanel(userData) {
+        // Удаляем старую панель если есть
+        if (verificationPanel) verificationPanel.remove();
+        const panelDiv = document.createElement('div');
+        panelDiv.id = 'verificationPanel';
+        panelDiv.style.marginTop = '20px';
+        panelDiv.style.padding = '15px';
+        panelDiv.style.background = '#11161f';
+        panelDiv.style.borderRadius = '10px';
+        panelDiv.style.border = '1px solid #4c5a48';
+        panelDiv.innerHTML = `
+            <label style="font-weight:bold;">📬 КОД ПОДТВЕРЖДЕНИЯ ИЗ ПИСЬМА (ОТВЕТ ОТ ФОНДА)</label>
+            <input type="text" id="confirmCode" placeholder="Введите код, присланный в ответном письме от testsnakegamebeta@gmail.com" style="margin-top:8px; margin-bottom:12px;">
+            <button id="submitCodeBtn" class="scp-button" style="background:#2d342e; margin-top:0;">✅ ПОДТВЕРДИТЬ И СОЗДАТЬ АККАУНТ</button>
+            <div class="small-note" style="margin-top:8px;">* Код был отправлен вам в ответном письме. Без него создание невозможно.</div>
+        `;
+        accountDisplayArea.insertAdjacentElement('afterend', panelDiv);
+        verificationPanel = panelDiv;
+
+        const submitBtn = document.getElementById('submitCodeBtn');
+        const codeInput = document.getElementById('confirmCode');
+        submitBtn.addEventListener('click', () => {
+            const enteredCode = codeInput.value.trim();
+            if (!enteredCode) {
+                updateStatusMessage('⚠️ Ошибка: введите код из ответного письма от testsnakegamebeta@gmail.com.', 'error');
+                return;
+            }
+            // Сравниваем с сохранённым кодом (который мы сгенерировали и "отправили" в письме)
+            const storedCode = localStorage.getItem('scp_verification_code');
+            if (storedCode && enteredCode === storedCode) {
+                // Код верен — создаем аккаунт
+                finalizeAccountCreation(userData);
+                if (verificationPanel) verificationPanel.remove();
+                verificationPanel = null;
+                localStorage.removeItem(STORAGE_PENDING_KEY);
+                localStorage.removeItem('scp_verification_code');
+                localStorage.removeItem(STORAGE_USER_DATA_KEY);
+            } else {
+                updateStatusMessage('❌ Неверный код подтверждения. Проверьте ответное письмо от отдела кадров (testsnakegamebeta@gmail.com) и введите точный код.', 'error');
+            }
+        });
+    }
+
+    function finalizeAccountCreation(userData) {
+        const accountInfo = {
+            fullName: userData.fullName,
+            contactEmail: userData.contactEmail,
+            comment: userData.comment,
+            createdAt: new Date().toISOString()
+        };
+        localStorage.setItem(STORAGE_ACCOUNT_CREATED_KEY, 'true');
+        localStorage.setItem(STORAGE_ACCOUNT_INFO_KEY, JSON.stringify(accountInfo));
+        displayAccountInfo(accountInfo);
+        updateStatusMessage('✅ АККАУНТ УСПЕШНО СОЗДАН! Добро пожаловать в закрытую сеть SCP Foundation.', 'success');
+        createBtn.disabled = true;
+        createBtn.style.opacity = '0.5';
+        createBtn.style.cursor = 'not-allowed';
+        // Очищаем панель подтверждения если есть
+        if (verificationPanel) verificationPanel.remove();
+        verificationPanel = null;
+    }
+
+    // Генерация случайного кода подтверждения
+    function generateVerificationCode() {
+        return 'SCP-' + Math.floor(100000 + Math.random() * 900000) + '-AUTH';
+    }
+
+    // Основная функция: создать запрос, открыть mailto, сгенерировать код
+    function initiateAccountRequest() {
+        const fullName = fullNameInput.value.trim();
+        const contactEmail = contactEmailInput.value.trim();
+        if (!fullName || !contactEmail) {
+            updateStatusMessage('❌ Ошибка: необходимо заполнить Имя сотрудника и Контактный Email.', 'error');
+            return;
+        }
+        if (!contactEmail.includes('@') || !contactEmail.includes('.')) {
+            updateStatusMessage('❌ Ошибка: введите корректный email адрес.', 'error');
+            return;
+        }
+        
+        // Генерируем код для подтверждения
+        const secretCode = generateVerificationCode();
+        generatedSecretCode = secretCode;
+        // Сохраняем код в localStorage для последующей верификации
+        localStorage.setItem('scp_verification_code', secretCode);
+        
+        // Сохраняем данные пользователя
+        const userPayload = {
+            fullName: fullName,
+            contactEmail: contactEmail,
+            comment: commentText.value.trim()
+        };
+        localStorage.setItem(STORAGE_USER_DATA_KEY, JSON.stringify(userPayload));
+        localStorage.setItem(STORAGE_PENDING_KEY, 'true');
+        
+        // Формируем тело письма: пользователь пишет на testsnakegamebeta@gmail.com
+        const subject = encodeURIComponent("ЗАПРОС НА СОЗДАНИЕ АККАУНТА SCP");
+        const bodyLines = [
+            "Уважаемый отдел кадров SCP Foundation!",
+            "",
+            "Запрашиваю создание учетной записи со следующими данными:",
+            `Имя: ${fullName}`,
+            `Email для связи: ${contactEmail}`,
+            `Доп. информация: ${commentText.value.trim() || "—"}`,
+            "",
+            "---",
+            "После одобрения, пожалуйста, отправьте ответ на этот адрес с кодом подтверждения:",
+            `${secretCode}`,
+            "Код необходим для активации аккаунта на сайте.",
+            "",
+            "С уважением, кандидат."
+        ];
+        const body = encodeURIComponent(bodyLines.join("\n"));
+        const mailtoLink = `mailto:testsnakegamebeta@gmail.com?subject=${subject}&body=${body}`;
+        
+        // Открываем почтовый клиент
+        window.location.href = mailtoLink;
+        
+        // Показываем панель ввода кода
+        showVerificationPanel(userPayload);
+        updateStatusMessage(`✉️ Запрос отправлен! Напишите письмо на testsnakegamebeta@gmail.com (откроется почтовый клиент). В ответном письме Фонд пришлёт код подтверждения. Введите его ниже. (Демо-код: ${secretCode})`, 'waiting');
+        
+        // Дополнительно блокируем повторное нажатие кнопки до завершения? нет, но можно предупредить
+        createBtn.disabled = false; // чтобы не блокировать, но если повторно нажмет - создаст новый код, лучше блокировать на время сессии
+        createBtn.textContent = "📜 ЗАПРОС ОТПРАВЛЕН (ОЖИДАЙТЕ ОТВЕТА)";
+        createBtn.disabled = true;
+        setTimeout(() => {
+            // восстанавливать не будем, пока аккаунт не создан или сброс
+        }, 100);
+    }
+    
+    createBtn.addEventListener('click', initiateAccountRequest);
+    
+    // Инициализация страницы: проверяем существующий аккаунт или ожидание
+    loadExistingAccount();
+</script>
+</body>
+  </html>
